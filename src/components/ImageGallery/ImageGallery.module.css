@@ -1,11 +1,11 @@
-.imageGallery {
+.gallery {
 	display: grid;
 
 	margin-top: 0 auto;
-	padding: 0;
+	padding: 12px;
 
 	max-width: calc(100vw - 48px);
-	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
 	grid-gap: 16px;
 
 	list-style: none;

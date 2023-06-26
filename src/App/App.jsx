@@ -1,50 +1,109 @@
 import React, { Component } from 'react';
-import css from './App.module.css';
-
-// import ImageGallery from '../ImageGallery/ImageGallery';
+import { apiRequest } from '../serviceApi/serviceApi';
 import Searchbar from '../components/Searchbar/Searchbar';
+import NotFound from '../components/NotFound/NotFound';
+import ImageGallery from '../components/ImageGallery/ImageGallery';
 import Button from '../components/Button/Button';
 import Modal from '../components/Modal/Modal';
 import Loader from '../components/Loader/Loader';
+import css from './App.module.css';
+
+const PER_PAGE = 12;
 
 export default class App extends Component {
   state = {
+    search: null,
+    page: 1,
+    images: [],
+    status: 'idle',
+    totalHits: null,
+    error: null,
     showModal: false,
+    isLoading: false,
   };
 
-  componentDidMount() {
-    // console.log('Modal componentDidMount');
-    fetch(
-      'https://pixabay.com/api/?q=cat&page=1&key=your_key&image_type=photo&orientation=horizontal&per_page=12'
-    )
-      .then(res => res.json())
-      .then(console.log);
-  }
+  // componentDidMount() {
+  //   this.setState({ search: '' });
+  // }
 
-  componentWillUnmount() {
-    // console.log('Modal WillUnmount');
+  async componentDidUpdate(prevProps, prevState) {
+    const { search, page } = this.state;
+
+    if (prevState.search === search && prevState.page === page) return;
+    if (prevState.search !== search) {
+      this.setState({ status: 'pending' });
+      await this.reset();
+      await this.getImage();
+    }
   }
+  getImage = () => {
+    const { search, page } = this.state;
+
+    apiRequest(search, page, PER_PAGE)
+      .then(response => {
+        if (response.ok) return response.json();
+        return Promise.reject(new Error());
+      })
+      .then(images => {
+        const { totalHits, hits } = images;
+        // console.log(images);
+        this.setState(prevState => ({
+          images: [...prevState.images, ...hits],
+          status: 'resolved',
+          totalHits: totalHits,
+        }));
+      })
+      .catch(error => this.setState({ error, status: 'rejected' }));
+  };
+
+  reset = () => {
+    this.setState({ page: 1, images: [] });
+  };
+
+  incrementPage = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
+  handleLoadMore = async () => {
+    // this.setState({ status: 'pending' });
+    await this.incrementPage();
+    await this.getImage();
+  };
+
+  recordOfSearchText = searchText => {
+    this.setState({ search: searchText });
+  };
 
   toggleModal = () => {
     this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
+  isLastPage = () => {
+    const { totalHits, page } = this.state;
+    return totalHits > page * PER_PAGE;
+  };
+
   render() {
-    const { showModal } = this.state;
+    const { status, error, search, images, showModal, totalHits } = this.state;
+    if (status === 'rejected') return <div>{error.message}</div>;
 
     return (
-      <>
-        <Searchbar onSubmit={this.toggleModal} />
-        <Button onClick={this.toggleModal}>Lean more</Button>
-
+      <div className={css.app}>
+        <Searchbar onSubmit={this.recordOfSearchText} />
+        {totalHits === 0 && <NotFound searchText={search} />}
+        {status === 'idle' && <p>Enter a search query</p>}
+        {status === 'pending' && <Loader />}
+        {status === 'resolved' && <ImageGallery images={images} />}
+        {this.isLastPage() && (
+          <Button onClick={this.handleLoadMore}>Load more</Button>
+        )}
+        {this.state.isLoading && <ImageGallery images={images} />}
         {showModal && (
           <Modal onClose={this.toggleModal}>
             <img src="" alt="ТУТ КАРТИНКА" />
           </Modal>
         )}
-
-        <Loader isVisible={!true} />
-      </>
+      </div>
     );
   }
 }
