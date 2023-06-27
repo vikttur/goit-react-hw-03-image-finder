@@ -87,7 +87,7 @@ export default class App extends Component {
         {status === 'idle' && <p>Enter a search query</p>}
         {status === 'pending' && <Loader />}
         {status === 'resolved' && <ImageGallery images={images} />}
-        {this.isLastPage() && (
+        {status === 'resolved' && this.isLastPage() && (
           <Button onClick={this.handleLoadMore}>Load more</Button>
         )}
         {isLoading && <Loader />}
