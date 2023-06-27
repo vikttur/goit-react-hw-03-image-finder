@@ -11,7 +11,7 @@
 	z-index: 999;
 
 	background-color: var(--color-overlay);
-	opacity: 0.75;
+	opacity: 1;
 }
 
 .modal {
@@ -23,5 +23,6 @@
 	max-height: calc(100vh - 24px);
 	padding: 20px;
 
-	background-color: var(--color-card);
+	object-fit: cover;
+	background-color: var(--color-text);
 }

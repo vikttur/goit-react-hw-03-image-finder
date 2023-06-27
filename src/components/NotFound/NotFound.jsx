@@ -3,7 +3,6 @@ import notFound from '../../images/notFound.jpg';
 import css from './NotFound.module.css';
 
 export default function NotFound({ searchText }) {
-  console.log(searchText);
   return (
     <div className={css.card}>
       <h2 className={css.text}>{searchText}</h2>

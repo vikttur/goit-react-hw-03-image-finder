@@ -4,7 +4,6 @@ import Searchbar from '../components/Searchbar/Searchbar';
 import NotFound from '../components/NotFound/NotFound';
 import ImageGallery from '../components/ImageGallery/ImageGallery';
 import Button from '../components/Button/Button';
-import Modal from '../components/Modal/Modal';
 import Loader from '../components/Loader/Loader';
 import css from './App.module.css';
 
@@ -18,13 +17,12 @@ export default class App extends Component {
     status: 'idle',
     totalHits: null,
     error: null,
-    showModal: false,
     isLoading: false,
   };
 
-  // componentDidMount() {
-  //   this.setState({ search: '' });
-  // }
+  componentDidMount() {
+    this.setState({ search: '' });
+  }
 
   async componentDidUpdate(prevProps, prevState) {
     const { search, page } = this.state;
@@ -46,7 +44,7 @@ export default class App extends Component {
       })
       .then(images => {
         const { totalHits, hits } = images;
-        // console.log(images);
+
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
           status: 'resolved',
@@ -65,7 +63,6 @@ export default class App extends Component {
   };
 
   handleLoadMore = async () => {
-    // this.setState({ status: 'pending' });
     await this.incrementPage();
     await this.getImage();
   };
@@ -74,17 +71,13 @@ export default class App extends Component {
     this.setState({ search: searchText });
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
-  };
-
   isLastPage = () => {
     const { totalHits, page } = this.state;
     return totalHits > page * PER_PAGE;
   };
 
   render() {
-    const { status, error, search, images, showModal, totalHits } = this.state;
+    const { status, error, search, images, totalHits, isLoading } = this.state;
     if (status === 'rejected') return <div>{error.message}</div>;
 
     return (
@@ -97,12 +90,7 @@ export default class App extends Component {
         {this.isLastPage() && (
           <Button onClick={this.handleLoadMore}>Load more</Button>
         )}
-        {this.state.isLoading && <ImageGallery images={images} />}
-        {showModal && (
-          <Modal onClose={this.toggleModal}>
-            <img src="" alt="ТУТ КАРТИНКА" />
-          </Modal>
-        )}
+        {isLoading && <Loader />}
       </div>
     );
   }
