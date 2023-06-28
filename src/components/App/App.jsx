@@ -79,7 +79,7 @@ export default class App extends Component {
         {totalHits === 0 && <NotFound searchText={search} />}
         {status === 'idle' && <p>Enter a search query</p>}
         {status === 'pending' && <Loader />}
-        {status === 'resolved' && <ImageGallery images={images} />}
+        <ImageGallery images={images} />
         {status === 'resolved' && this.isLastPage() && (
           <Button onClick={this.handleLoadMore}>Load more</Button>
         )}
